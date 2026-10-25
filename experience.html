@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>NOVA MIND — AR Experience</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  #ar-container { position: fixed; inset: 0; overflow: hidden; background: #000; display: none; }
+  #hud { position: fixed; left: 0; right: 0; bottom: 0; display: none; z-index: 10; }
+  #hud .panel {
+    background: var(--paper); color: var(--ink);
+    border-top: 3px solid var(--ink); padding: 16px 18px 20px;
+  }
+  #status { font-family: 'Anton', sans-serif; text-transform: uppercase; font-size: 21px; letter-spacing: .02em; }
+  #prime { max-width: 680px; margin: 0 auto; padding: 0 22px 60px; }
+  #err { color: #B42318; font-weight: 600; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+  }
+}
+</script>
+</head>
+<body>
+<div id="prime">
+  <header class="topbar">
+    <div class="wordmark">Nova<em>Mind</em></div>
+    <nav><a href="index.html">← Campaign</a></nav>
+  </header>
+  <div class="kicker">Live AR · Image-target tracking</div>
+  <h1 class="display" style="font-size:clamp(40px,8vw,72px)">Point.<br>Scan.<br><span class="hot">It's alive.</span></h1>
+  <p class="lede">This uses your camera to find the NOVA MIND poster artwork and lock a 3D mascot onto it. Nothing is recorded or uploaded — the camera feed never leaves your phone.</p>
+  <div class="row">
+    <button class="btn accent" id="startBtn">Start the camera</button>
+    <a class="btn ghost" href="fallback.html">No camera? 3D viewer</a>
+  </div>
+  <p class="note" style="margin-top:18px">Works best on Chrome (Android) or Safari (iOS) over HTTPS. Aim at the poster artwork — printed, or open on the campaign home page.</p>
+  <p class="note" id="err" style="margin-top:10px"></p>
+</div>
+
+<div id="ar-container"></div>
+<div id="hud">
+  <div class="panel">
+    <div id="status">Searching for the poster…</div>
+    <div id="ctaRow" style="margin-top:10px; display:none">
+      <button class="btn accent" id="ctaBtn">Join the waitlist</button>
+      <span class="note" style="margin-left:10px">Found it — this lock-on is the campaign moment.</span>
+    </div>
+    <form id="leadForm" style="display:none; margin-top:6px">
+      <input type="email" id="leadEmail" placeholder="you@college.edu" required>
+      <button class="btn accent" type="submit">Count me in</button>
+      <div class="note" style="margin-top:8px">Demo only — stored on this device, never sent anywhere.</div>
+    </form>
+    <div id="thanks" style="display:none; margin-top:10px; font-weight:700">You're in. See you at TechFest '26.</div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { MindARThree } from 'mindar-image-three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { logEvent } from './assets/app.js';
+
+logEvent('qr_scan');
+
+const params = new URLSearchParams(location.search);
+const prime = document.getElementById('prime');
+const container = document.getElementById('ar-container');
+const hud = document.getElementById('hud');
+const status = document.getElementById('status');
+const err = document.getElementById('err');
+let engagedAt = 0;
+
+document.getElementById('ctaBtn').addEventListener('click', () => {
+  logEvent('cta_click');
+  document.getElementById('ctaRow').style.display = 'none';
+  document.getElementById('leadForm').style.display = 'block';
+});
+document.getElementById('leadForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  logEvent('lead_submit');
+  e.target.style.display = 'none';
+  document.getElementById('thanks').style.display = 'block';
+});
+
+document.getElementById('startBtn').addEventListener('click', async () => {
+  err.textContent = '';
+  try {
+    const mindResp = await fetch('./assets/card.mind.b64');
+    const mindB64 = (await mindResp.text()).trim();
+    const mindBytes = Uint8Array.from(atob(mindB64), c => c.charCodeAt(0));
+    const mindUrl = URL.createObjectURL(new Blob([mindBytes], { type: 'application/octet-stream' }));
+    const mindarThree = new MindARThree({
+      container,
+      imageTargetSrc: mindUrl,
+      maxTrack: 1,
+      uiLoading: 'no', uiScanning: 'no', uiError: 'no',
+    });
+    const { renderer, scene, camera } = mindarThree;
+    const anchor = mindarThree.addAnchor(0);
+
+    const loader = new GLTFLoader();
+    const gltf = await loader.loadAsync('./assets/softmind/scene-embedded.gltf');
+    const model = gltf.scene;
+    model.scale.set(0.55, 0.55, 0.55);
+    model.position.set(0, -0.35, 0.15);
+    anchor.group.add(model);
+
+    const panel = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.05, 0.28),
+      new THREE.MeshBasicMaterial({ color: 0xff4b1f, transparent: true, opacity: 0.92 })
+    );
+    panel.position.set(0, 0.62, 0.05);
+    anchor.group.add(panel);
+
+    anchor.onTargetFound = () => {
+      logEvent('target_found');
+      engagedAt = Date.now();
+      status.textContent = 'NOVA MIND — your AI study buddy';
+      document.getElementById('ctaRow').style.display = 'block';
+    };
+    anchor.onTargetLost = () => {
+      if (engagedAt && Date.now() - engagedAt > 3000) logEvent('content_engaged');
+      status.textContent = 'Searching for the poster…';
+    };
+
+    prime.style.display = 'none';
+    container.style.display = 'block';
+    hud.style.display = 'block';
+    await mindarThree.start();
+    logEvent('experience_start');
+    renderer.setAnimationLoop(() => {
+      model.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    });
+  } catch (e2) {
+    console.error(e2);
+    err.textContent = 'Camera or AR could not start on this device/browser. Use the 3D viewer fallback instead — same content, no camera.';
+    logEvent('experience_start', { fallback: 'suggested', reason: String(e2 && e2.message || e2).slice(0, 120) });
+  }
+});
+</script>
+</body>
+</html>

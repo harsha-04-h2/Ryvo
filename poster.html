@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA MIND — Printable Poster</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .poster {
+    border: 3px solid var(--ink); background: var(--paper-2);
+    max-width: 680px; margin: 26px auto 0; padding: 30px 30px 22px;
+  }
+  .poster .p-head {
+    display: flex; justify-content: space-between; gap: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    border-bottom: 2px solid var(--ink); padding-bottom: 12px;
+  }
+  .poster .p-head .r { color: var(--accent); font-weight: 600; }
+  .poster h1 {
+    font-family: 'Anton', sans-serif; font-weight: 400; text-transform: uppercase;
+    font-size: clamp(38px, 8vw, 62px); line-height: .96; margin: 20px 0 6px;
+  }
+  .poster h1 .hot { color: var(--accent); }
+  .poster .art { width: 100%; display: block; border: 2px solid var(--ink); margin: 16px 0; }
+  .poster .p-row { display: flex; gap: 20px; align-items: center; border-top: 2px solid var(--ink); padding-top: 18px; }
+  .qrbox { border: 2px solid var(--ink); padding: 10px; background: #fff; flex: none; }
+  .qrbox canvas, .qrbox img { width: 148px; height: 148px; display: block; }
+  .poster .p-cta { font-size: 19px; font-weight: 700; line-height: 1.35; }
+  .poster .p-cta span { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+  @media print {
+    body { background: #fff; }
+    .noprint { display: none !important; }
+    .poster { margin: 0 auto; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar noprint">
+    <div class="wordmark">Nova<em>Mind</em></div>
+    <nav><a href="index.html">← Campaign home</a></nav>
+  </header>
+
+  <p class="note noprint" style="margin-top:22px">Print this page (Ctrl/Cmd+P) and put it up. The QR is generated for wherever this site is hosted and carries the placement tag <b>p=poster</b>. The artwork inside the frame is the AR target.</p>
+
+  <div class="poster">
+    <div class="p-head"><span>TechFest '26 · Main Gate</span><span class="r">Est. attendance 4,000</span></div>
+    <h1>Your study buddy is <span class="hot">hiding in this poster.</span></h1>
+    <img class="art" id="targetImg" alt="NOVA MIND poster artwork — point your camera at this image in the AR experience">
+    <div class="p-row">
+      <div class="qrbox"><div id="qr"></div></div>
+      <p class="p-cta">Scan. Point at the artwork. Watch it move.<span>No app download — opens in your browser</span></p>
+    </div>
+  </div>
+
+  <p class="note noprint" style="margin-top:16px">How it works: the QR opens the campaign experience; the framed artwork is the image target the AR engine tracks, and the mascot anchors to it in 3D.</p>
+</div>
+<script>
+  const url = new URL('experience.html?p=poster', location.href).href;
+  QRCode.toCanvas(document.createElement('canvas'), url, { width: 324, errorCorrectionLevel: 'M' }, (err, canvas) => {
+    if (!err) { canvas.style.width = '148px'; canvas.style.height = '148px'; document.getElementById('qr').appendChild(canvas); }
+  });
+</script>
+<script>
+fetch('assets/card.png.b64').then(r => r.text()).then(b64 => {
+  const bytes = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0));
+  document.getElementById('targetImg').src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+});
+</script>
+</body>
+</html>
