@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RYVO STUDIO — Create an AR Campaign</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 800px) { .studio-grid { grid-template-columns: 1fr; } }
+  label.flab { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin: 18px 0 6px; }
+  input[type="text"], input[type="file"] {
+    width: 100%; font: inherit; padding: 12px 14px; background: var(--paper-2);
+    border: 2px solid var(--ink); color: var(--ink);
+  }
+  input[type="text"]:focus { outline: 3px solid var(--accent); outline-offset: 1px; }
+  input[type="color"] { width: 64px; height: 44px; border: 2px solid var(--ink); background: var(--paper-2); padding: 3px; cursor: pointer; }
+  .swatches { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .sw { width: 34px; height: 34px; border: 2px solid var(--ink); cursor: pointer; padding: 0; }
+  .preview { border: 2px solid var(--ink); background: var(--paper-2); padding: 18px; position: sticky; top: 18px; }
+  .preview .pv-brand { font-family: 'Anton', sans-serif; text-transform: uppercase; font-size: 30px; line-height: 1; }
+  .preview img { width: 100%; display: block; border: 1px solid var(--ink); margin: 14px 0; background: #fff; min-height: 120px; object-fit: contain; }
+  .preview .pv-cta { display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; padding: 11px 18px; color: #fff; background: var(--accent); border: 2px solid var(--accent); }
+  .bar { height: 14px; border: 2px solid var(--ink); background: var(--paper-2); margin-top: 14px; display: none; }
+  .bar > div { height: 100%; width: 0%; background: var(--accent); transition: width .2s ease; }
+  .camp-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #CFC9B8; padding: 12px 0; flex-wrap: wrap; }
+  .camp-row .nm { font-weight: 700; }
+  .camp-row .meta { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  #qrWrap { margin-top: 14px; }
+  #qrWrap canvas, #qrWrap img { width: 168px; height: 168px; border: 2px solid var(--ink); background: #fff; padding: 8px; }
+  .err { color: #B42318; font-weight: 600; margin-top: 10px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="wordmark">Ryvo<em>Studio</em></div>
+    <nav>
+      <a href="index.html">Campaign</a>
+      <a href="poster.html">Poster</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </header>
+
+  <div class="kicker">Brand Studio · Create → Compile → Publish</div>
+  <h1 class="display" style="font-size:clamp(40px,8vw,80px)">Make your own<br><span class="hot">poster come alive.</span></h1>
+  <p class="lede">This is the actual product loop, not a mockup: name your campaign, upload <b>your own artwork</b>, and Ryvo compiles it into a trackable AR target <b>right here in your browser</b>. Publish, and you get a live experience link + QR. Point a phone at your artwork and it locks on.</p>
+
+  <section class="sec">
+    <div class="sec-head"><span><span class="no">01</span> — Campaign setup</span><span>Stored on this device (demo)</span></div>
+    <div class="studio-grid">
+      <form id="studioForm">
+        <label class="flab" for="fBrand">Brand / campaign name</label>
+        <input type="text" id="fBrand" placeholder="e.g. Brew &amp; Bean Coffee" maxlength="40" required>
+        <label class="flab" for="fHeadline">Lock-on headline (shows when the artwork is found)</label>
+        <input type="text" id="fHeadline" placeholder="e.g. Your first coffee is on us" maxlength="70" required>
+        <label class="flab" for="fCta">Call-to-action button</label>
+        <input type="text" id="fCta" placeholder="e.g. Claim 20% off" maxlength="30" required>
+        <label class="flab">Accent colour</label>
+        <div class="swatches">
+          <input type="color" id="fColor" value="#FF4B1F">
+          <button type="button" class="sw" data-c="#FF4B1F" style="background:#FF4B1F" aria-label="Vermilion"></button>
+          <button type="button" class="sw" data-c="#0B6E4F" style="background:#0B6E4F" aria-label="Green"></button>
+          <button type="button" class="sw" data-c="#1D4ED8" style="background:#1D4ED8" aria-label="Blue"></button>
+          <button type="button" class="sw" data-c="#B5179E" style="background:#B5179E" aria-label="Magenta"></button>
+          <button type="button" class="sw" data-c="#16130E" style="background:#16130E" aria-label="Ink"></button>
+        </div>
+        <label class="flab" for="fArt">Your artwork (poster, packaging, logo card — JPG/PNG)</label>
+        <input type="file" id="fArt" accept="image/*" required>
+        <p class="note" style="margin-top:8px">Tracking works best on detailed, high-contrast artwork. Plain logos on white track poorly — a real constraint of image AR, not a bug.</p>
+        <div class="bar" id="bar"><div id="barFill"></div></div>
+        <p class="note" id="compileStatus" style="margin-top:10px"></p>
+        <p class="err" id="formErr"></p>
+        <div class="row">
+          <button class="btn accent" type="submit" id="publishBtn">Compile &amp; publish campaign</button>
+        </div>
+      </form>
+
+      <div class="preview">
+        <div class="mono" style="font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)">Live preview — lock-on state</div>
+        <div class="pv-brand" id="pvBrand">Your brand</div>
+        <img id="pvArt" alt="Your artwork preview">
+        <div style="font-weight:700; font-size:18px" id="pvHeadline">Your headline appears here</div>
+        <div style="margin-top:12px"><span class="pv-cta" id="pvCta">Your CTA</span></div>
+        <p class="note" style="margin-top:14px">This is what a customer's phone shows the moment the camera finds your artwork.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="publishedSec" style="display:none">
+    <div class="sec-head"><span><span class="no">02</span> — Published</span><span>Live on this device</span></div>
+    <h2 id="pubTitle">Campaign live.</h2>
+    <p class="lede" style="font-size:18px">Open the experience on your phone, allow the camera, and point it at your artwork — printed or on another screen.</p>
+    <div id="qrWrap"></div>
+    <div class="row">
+      <a class="btn accent" id="pubLink" href="#">Open the live experience</a>
+      <a class="btn ghost" href="dashboard.html">Watch the dashboard</a>
+    </div>
+    <p class="note" style="margin-top:12px">Demo limit, stated plainly: campaigns are stored in this browser, so the link works on this device. The production studio stores campaigns server-side, which makes the link and QR work on any phone.</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span><span class="no">03</span> — Your campaigns</span><span>This device</span></div>
+    <div id="campList"></div>
+  </section>
+
+  <footer class="foot"><span>Ryvo Studio — AR campaign platform</span><span>Compile happens 100% in-browser</span></footer>
+</div>
+
+<script type="module">
+import { Compiler } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js';
+
+const KEY = 'ryvo_campaigns';
+const $ = id => document.getElementById(id);
+const load = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+const save = list => localStorage.setItem(KEY, JSON.stringify(list));
+
+let artFile = null, artDataUrl = '';
+
+function syncPreview() {
+  $('pvBrand').textContent = $('fBrand').value || 'Your brand';
+  $('pvHeadline').textContent = $('fHeadline').value || 'Your headline appears here';
+  const cta = $('pvCta');
+  cta.textContent = $('fCta').value || 'Your CTA';
+  cta.style.background = $('fColor').value; cta.style.borderColor = $('fColor').value;
+}
+['fBrand', 'fHeadline', 'fCta', 'fColor'].forEach(id => $(id).addEventListener('input', syncPreview));
+document.querySelectorAll('.sw').forEach(b => b.addEventListener('click', () => { $('fColor').value = b.dataset.c; syncPreview(); }));
+
+// Downscale artwork for storage + faster compile (max 1000px on the long edge)
+async function processArtwork(file) {
+  const url = URL.createObjectURL(file);
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+  const scale = Math.min(1, 1000 / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  cv.getContext('2d').drawImage(img, 0, 0, w, h);
+  const dataUrl = cv.toDataURL('image/jpeg', 0.85);
+  const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+  const compileImg = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(blob); });
+  return { dataUrl, compileImg };
+}
+
+$('fArt').addEventListener('change', async e => {
+  artFile = e.target.files[0] || null;
+  if (!artFile) return;
+  const { dataUrl } = await processArtwork(artFile);
+  artDataUrl = dataUrl;
+  $('pvArt').src = dataUrl;
+});
+
+function renderList() {
+  const list = load();
+  $('campList').innerHTML = list.length ? '' : '<p class="note">No campaigns yet — yours will appear here after publishing. The NOVA MIND sample campaign on the home page is the built-in demo.</p>';
+  list.forEach(c => {
+    const row = document.createElement('div'); row.className = 'camp-row';
+    row.innerHTML = `<div><span class="nm"></span> <span class="meta"></span></div>`;
+    row.querySelector('.nm').textContent = c.brand;
+    row.querySelector('.meta').textContent = ' · ' + new Date(c.createdAt).toLocaleDateString();
+    const links = document.createElement('div'); links.className = 'row'; links.style.marginTop = '0';
+    const open = document.createElement('a'); open.className = 'btn ghost'; open.textContent = 'Open experience';
+    open.href = `experience.html?c=${c.id}&p=poster`;
+    const del = document.createElement('button'); del.className = 'btn ghost'; del.textContent = 'Delete';
+    del.addEventListener('click', () => { save(load().filter(x => x.id !== c.id)); renderList(); });
+    links.append(open, del); row.append(links);
+    $('campList').append(row);
+  });
+}
+renderList();
+
+$('studioForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('formErr').textContent = '';
+  if (!artFile) { $('formErr').textContent = 'Add your artwork first — it becomes the AR target.'; return; }
+  const btn = $('publishBtn'); btn.disabled = true; btn.textContent = 'Compiling target…';
+  $('bar').style.display = 'block';
+  try {
+    const { dataUrl, compileImg } = await processArtwork(artFile);
+    const compiler = new Compiler();
+    await compiler.compileImageTargets([compileImg], p => {
+      $('barFill').style.width = p.toFixed(0) + '%';
+      $('compileStatus').textContent = 'Compiling your artwork into a trackable target — ' + p.toFixed(0) + '%';
+    });
+    const buffer = await compiler.exportData();
+    const bytes = new Uint8Array(buffer);
+    let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+    const campaign = {
+      id: 'c' + Date.now().toString(36),
+      brand: $('fBrand').value.trim(), headline: $('fHeadline').value.trim(),
+      cta: $('fCta').value.trim(), color: $('fColor').value,
+      art: dataUrl, mindB64: btoa(bin), createdAt: Date.now(),
+    };
+    const list = load(); list.unshift(campaign);
+    try { save(list); } catch (quota) {
+      btn.disabled = false; btn.textContent = 'Compile & publish campaign';
+      $('formErr').textContent = 'This browser\'s demo storage is full (about 5MB). Delete an older campaign below and publish again. Production storage is server-side.';
+      return;
+    }
+    renderList();
+    const link = new URL(`experience.html?c=${campaign.id}&p=poster`, location.href).href;
+    $('pubLink').href = link;
+    $('pubTitle').textContent = campaign.brand + ' — live.';
+    $('qrWrap').innerHTML = '';
+    QRCode.toCanvas(document.createElement('canvas'), link, { width: 336, errorCorrectionLevel: 'M' }, (err, canvas) => {
+      if (!err) { canvas.style.width = '168px'; canvas.style.height = '168px'; $('qrWrap').appendChild(canvas); }
+    });
+    $('publishedSec').style.display = 'block';
+    $('compileStatus').textContent = 'Target compiled and campaign published.';
+    $('publishedSec').scrollIntoView({ behavior: 'smooth' });
+  } catch (err2) {
+    console.error(err2);
+    $('formErr').textContent = 'Compiling failed on this artwork/device. Try a more detailed, higher-contrast image.';
+  }
+  btn.disabled = false; btn.textContent = 'Compile & publish campaign';
+});
+</script>
+</body>
+</html>

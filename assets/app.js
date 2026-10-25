@@ -5,7 +5,7 @@ export function logEvent(type, extra = {}) {
   const params = new URLSearchParams(location.search);
   const evt = {
     type,
-    campaign: 'nova-mind-techfest26',
+    campaign: params.get('c') || 'nova-mind-techfest26',
     placement: params.get('p') || 'direct',
     ts: new Date().toISOString(),
     session: sessionStorage.getItem('nm_session') || (() => {

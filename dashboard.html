@@ -40,7 +40,7 @@
 
   <section class="sec">
     <div class="sec-head"><span><span class="no">03</span> — Raw event log</span><span>Last 30</span></div>
-    <table><thead><tr><th>Time</th><th>Event</th><th>Placement</th></tr></thead>
+    <table><thead><tr><th>Time</th><th>Event</th><th>Placement</th><th>Campaign</th></tr></thead>
     <tbody id="log"></tbody></table>
   </section>
 
@@ -54,7 +54,7 @@ m_scans.textContent = count('qr_scan'); m_starts.textContent = count('experience
 m_found.textContent = count('target_found'); m_cta.textContent = count('cta_click'); m_leads.textContent = count('lead_submit');
 const placements = [...new Set(evts.map(e => e.placement))];
 byPlacement.innerHTML = placements.map(p => `<tr><td>${p}</td><td>${count('qr_scan', p)}</td><td>${count('experience_start', p)}</td><td>${count('target_found', p)}</td><td>${count('cta_click', p)}</td><td>${count('lead_submit', p)}</td></tr>`).join('') || '<tr><td colspan="6">No events yet — run the experience first.</td></tr>';
-log.innerHTML = evts.slice(-30).reverse().map(e => `<tr><td>${e.ts.replace('T', ' ').slice(0, 19)}</td><td>${e.type}</td><td>${e.placement}</td></tr>`).join('') || '<tr><td colspan="3">No events yet.</td></tr>';
+log.innerHTML = evts.slice(-30).reverse().map(e => `<tr><td>${e.ts.replace('T', ' ').slice(0, 19)}</td><td>${e.type}</td><td>${e.placement}</td><td>${e.campaign}</td></tr>`).join('') || '<tr><td colspan="4">No events yet.</td></tr>';
 document.getElementById('clearBtn').addEventListener('click', () => { localStorage.removeItem('nm_events'); location.reload(); });
 </script>
 </body>
