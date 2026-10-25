@@ -33,7 +33,7 @@
     <nav><a href="index.html">← Campaign</a></nav>
   </header>
   <div class="kicker">Live AR · Image-target tracking</div>
-  <h1 class="display" style="font-size:clamp(40px,8vw,72px)">Point.<br>Scan.<br><span class="hot">It's alive.</span></h1>
+  <h1 class="display" id="primeTitle" style="font-size:clamp(40px,8vw,72px)">Point.<br>Scan.<br><span class="hot">It's alive.</span></h1>
   <p class="lede">This uses your camera to find the NOVA MIND poster artwork and lock a 3D mascot onto it. Nothing is recorded or uploaded — the camera feed never leaves your phone.</p>
   <div class="row">
     <button class="btn accent" id="startBtn">Start the camera</button>
@@ -68,6 +68,23 @@ import { logEvent } from './assets/app.js';
 
 logEvent('qr_scan');
 
+// Ryvo Studio campaign (?c=<id>): campaigns are stored in this browser by studio.html
+const campaignId = new URLSearchParams(location.search).get('c');
+let campaign = null;
+if (campaignId) {
+  try { campaign = (JSON.parse(localStorage.getItem('ryvo_campaigns') || '[]')).find(x => x.id === campaignId) || null; } catch (e) {}
+}
+const accentInt = campaign ? parseInt(campaign.color.slice(1), 16) : 0xff4b1f;
+if (campaign) {
+  document.title = campaign.brand + ' — AR Experience';
+  document.getElementById('primeTitle').innerHTML = 'Point at the<br><span class="hot">artwork.</span>';
+  document.querySelector('#prime .lede').textContent = campaign.brand + ' — point your camera at the campaign artwork and watch it lock on. Nothing is recorded or uploaded.';
+  const ctaBtnEl = document.getElementById('ctaBtn');
+  ctaBtnEl.textContent = campaign.cta;
+  ctaBtnEl.style.background = campaign.color; ctaBtnEl.style.borderColor = campaign.color;
+  document.getElementById('thanks').textContent = 'Done — ' + campaign.brand + ' has your response.';
+}
+
 const params = new URLSearchParams(location.search);
 const prime = document.getElementById('prime');
 const container = document.getElementById('ar-container');
@@ -91,9 +108,14 @@ document.getElementById('leadForm').addEventListener('submit', (e) => {
 document.getElementById('startBtn').addEventListener('click', async () => {
   err.textContent = '';
   try {
-    const mindResp = await fetch('./assets/card.mind.b64');
-    const mindB64 = (await mindResp.text()).trim();
-    const mindBytes = Uint8Array.from(atob(mindB64), c => c.charCodeAt(0));
+    let mindBytes;
+    if (campaign) {
+      mindBytes = Uint8Array.from(atob(campaign.mindB64), c => c.charCodeAt(0));
+    } else {
+      const mindResp = await fetch('./assets/card.mind.b64');
+      const mindB64 = (await mindResp.text()).trim();
+      mindBytes = Uint8Array.from(atob(mindB64), c => c.charCodeAt(0));
+    }
     const mindUrl = URL.createObjectURL(new Blob([mindBytes], { type: 'application/octet-stream' }));
     const mindarThree = new MindARThree({
       container,
@@ -113,7 +135,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
 
     const panel = new THREE.Mesh(
       new THREE.PlaneGeometry(1.05, 0.28),
-      new THREE.MeshBasicMaterial({ color: 0xff4b1f, transparent: true, opacity: 0.92 })
+      new THREE.MeshBasicMaterial({ color: accentInt, transparent: true, opacity: 0.92 })
     );
     panel.position.set(0, 0.62, 0.05);
     anchor.group.add(panel);
@@ -121,7 +143,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     anchor.onTargetFound = () => {
       logEvent('target_found');
       engagedAt = Date.now();
-      status.textContent = 'NOVA MIND — your AI study buddy';
+      status.textContent = campaign ? campaign.headline : 'NOVA MIND — your AI study buddy';
       document.getElementById('ctaRow').style.display = 'block';
     };
     anchor.onTargetLost = () => {
