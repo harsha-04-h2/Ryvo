@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA MIND — Printable Poster</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .poster { background:#101828; color:#fff; border-radius:22px; padding:34px 28px; max-width:640px; margin:0 auto; text-align:center; }
+  .poster h1 { color:#fff; }
+  .poster .art { width:78%; border-radius:14px; margin:16px auto; display:block; }
+  .qrbox { background:#fff; border-radius:14px; padding:14px; width:190px; margin:14px auto 4px; }
+  .qrbox canvas, .qrbox img { width:162px; height:162px; }
+  @media print { body { background:#fff; } .noprint { display:none; } .poster { border-radius:0; } }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <p class="noprint" style="margin-bottom:16px"><a href="index.html">← Back to campaign home</a> · Print this page (Ctrl/Cmd+P) and put it up. The QR below is generated for wherever this site is hosted, and it carries the placement tag <b>p=poster</b>.</p>
+  <div class="poster">
+    <div class="kicker" style="color:#ffb59d">TechFest '26 · Main Gate</div>
+    <h1>YOUR AI STUDY BUDDY IS ON THIS POSTER</h1>
+    <img class="art" src="assets/card.png" alt="NOVA MIND poster artwork — point your camera at this image in the AR experience">
+    <p style="font-size:19px">Scan the code. Point at the artwork. Watch it move.</p>
+    <div class="qrbox"><div id="qr"></div></div>
+    <p style="opacity:.85">No app download. Opens in your browser.</p>
+    <p style="font-weight:800; letter-spacing:.12em; margin-top:10px">NOVA MIND</p>
+  </div>
+  <p class="note noprint">How it works: the QR opens the campaign experience. The artwork above is the image target the AR engine tracks — the mascot anchors to it in 3D.</p>
+</div>
+<script>
+  const url = new URL('experience.html?p=poster', location.href).href;
+  QRCode.toCanvas(document.createElement('canvas'), url, { width: 324, errorCorrectionLevel: 'M' }, (err, canvas) => {
+    if (!err) { canvas.style.width = '162px'; canvas.style.height = '162px'; document.getElementById('qr').appendChild(canvas); }
+  });
+</script>
+</body>
+</html>

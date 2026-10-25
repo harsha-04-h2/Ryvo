@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA MIND — AR Campaign Demo</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Demo campaign · AR Branding Platform</div>
+  <h1>The poster is the landing page.</h1>
+  <p class="lede">NOVA MIND is a fictional AI study-buddy app launching at TechFest '26. This is a working demo of the platform: print the poster, scan the QR, point your camera at the artwork, and the campaign comes alive — no app download. Every scan, start, and tap is measured per placement.</p>
+
+  <div class="card">
+    <h2>Try the flow</h2>
+    <p>1. Open the poster and print it (or show it on a second screen).<br>
+       2. Scan the poster's QR code with your phone — or open the experience directly.<br>
+       3. Allow camera access and point at the poster artwork. The mascot locks onto it.<br>
+       4. Tap the call to action, then check the dashboard.</p>
+    <div class="row">
+      <a class="btn accent" href="experience.html?p=poster">Open the AR experience</a>
+      <a class="btn ghost" href="poster.html">Printable poster + QR</a>
+      <a class="btn ghost" href="fallback.html?p=poster">No-camera fallback</a>
+      <a class="btn ghost" href="dashboard.html">Campaign dashboard</a>
+    </div>
+    <p class="note">Honest labels: the AR page is real image-target tracking (MindAR + Three.js). The fallback is a 3D viewer, not AR, and the site says so. Analytics on this static demo are stored on this device only — the production platform uses the server event pipeline.</p>
+  </div>
+
+  <div class="card">
+    <h2>The campaign artwork (the AR target)</h2>
+    <img class="target" src="assets/card.png" alt="NOVA MIND campaign artwork — the image the AR engine tracks">
+    <p class="note">This artwork is the tracked target in this demo build. In the production studio, a brand compiles its own poster or packaging as the target.</p>
+  </div>
+</div>
+</body>
+</html>

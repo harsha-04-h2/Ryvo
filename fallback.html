@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA MIND — 3D Viewer (fallback, not AR)</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>#viewer { width: 100%; height: 55vh; background: #101828; border-radius: 18px; }</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Fallback experience · Not AR</div>
+  <h1 style="font-size:36px">The same mascot, no camera needed</h1>
+  <p class="lede">This is the honest fallback every campaign ships with: when a phone can't run AR or the camera is denied, the customer still gets the content and the call to action. Drag to rotate.</p>
+  <div id="viewer" style="margin-top:18px"></div>
+  <div class="card">
+    <h2>Join the waitlist</h2>
+    <form id="leadForm">
+      <input type="email" id="leadEmail" placeholder="you@college.edu" required>
+      <button class="btn accent" type="submit">Count me in</button>
+    </form>
+    <div id="thanks" style="display:none; font-weight:700">You're in. See you at TechFest '26.</div>
+    <p class="note">Demo only — stored on this device, never sent anywhere. <a href="experience.html?p=fallback">Back to the AR experience</a></p>
+  </div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { logEvent } from './assets/app.js';
+
+logEvent('experience_start', { fallback: 'viewer' });
+
+const el = document.getElementById('viewer');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(el.clientWidth, el.clientHeight);
+el.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, el.clientWidth / el.clientHeight, 0.1, 100);
+camera.position.set(0, 0.6, 2.4);
+scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+const dir = new THREE.DirectionalLight(0xffffff, 1.5); dir.position.set(2, 3, 2); scene.add(dir);
+const controls = new OrbitControls(camera, renderer.domElement);
+const gltf = await new GLTFLoader().loadAsync('./assets/softmind/scene.gltf');
+const model = gltf.scene; model.position.y = -0.55; scene.add(model);
+renderer.setAnimationLoop(() => { model.rotation.y += 0.005; controls.update(); renderer.render(scene, camera); });
+
+document.getElementById('leadForm').addEventListener('submit', (e) => {
+  e.preventDefault(); logEvent('lead_submit', { fallback: 'viewer' });
+  e.target.style.display = 'none'; document.getElementById('thanks').style.display = 'block';
+});
+</script>
+</body>
+</html>
