@@ -29,9 +29,15 @@
 
   <div class="card">
     <h2>The campaign artwork (the AR target)</h2>
-    <img class="target" src="assets/card.png" alt="NOVA MIND campaign artwork — the image the AR engine tracks">
+    <img class="target" id="targetImg" alt="NOVA MIND campaign artwork — the image the AR engine tracks">
     <p class="note">This artwork is the tracked target in this demo build. In the production studio, a brand compiles its own poster or packaging as the target.</p>
   </div>
 </div>
+<script>
+fetch('assets/card.png.b64').then(r => r.text()).then(b64 => {
+  const bytes = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0));
+  document.getElementById('targetImg').src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+});
+</script>
 </body>
 </html>

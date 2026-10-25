@@ -21,7 +21,7 @@
   <div class="poster">
     <div class="kicker" style="color:#ffb59d">TechFest '26 · Main Gate</div>
     <h1>YOUR AI STUDY BUDDY IS ON THIS POSTER</h1>
-    <img class="art" src="assets/card.png" alt="NOVA MIND poster artwork — point your camera at this image in the AR experience">
+    <img class="art" id="targetImg" alt="NOVA MIND poster artwork — point your camera at this image in the AR experience">
     <p style="font-size:19px">Scan the code. Point at the artwork. Watch it move.</p>
     <div class="qrbox"><div id="qr"></div></div>
     <p style="opacity:.85">No app download. Opens in your browser.</p>
@@ -34,6 +34,12 @@
   QRCode.toCanvas(document.createElement('canvas'), url, { width: 324, errorCorrectionLevel: 'M' }, (err, canvas) => {
     if (!err) { canvas.style.width = '162px'; canvas.style.height = '162px'; document.getElementById('qr').appendChild(canvas); }
   });
+</script>
+<script>
+fetch('assets/card.png.b64').then(r => r.text()).then(b64 => {
+  const bytes = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0));
+  document.getElementById('targetImg').src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+});
 </script>
 </body>
 </html>

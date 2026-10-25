@@ -83,9 +83,13 @@ document.getElementById('leadForm').addEventListener('submit', (e) => {
 document.getElementById('startBtn').addEventListener('click', async () => {
   err.textContent = '';
   try {
+    const mindResp = await fetch('./assets/card.mind.b64');
+    const mindB64 = (await mindResp.text()).trim();
+    const mindBytes = Uint8Array.from(atob(mindB64), c => c.charCodeAt(0));
+    const mindUrl = URL.createObjectURL(new Blob([mindBytes], { type: 'application/octet-stream' }));
     const mindarThree = new MindARThree({
       container,
-      imageTargetSrc: './assets/card.mind',
+      imageTargetSrc: mindUrl,
       maxTrack: 1,
       uiLoading: 'no', uiScanning: 'no', uiError: 'no',
     });
@@ -93,7 +97,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     const anchor = mindarThree.addAnchor(0);
 
     const loader = new GLTFLoader();
-    const gltf = await loader.loadAsync('./assets/softmind/scene.gltf');
+    const gltf = await loader.loadAsync('./assets/softmind/scene-embedded.gltf');
     const model = gltf.scene;
     model.scale.set(0.55, 0.55, 0.55);
     model.position.set(0, -0.35, 0.15);

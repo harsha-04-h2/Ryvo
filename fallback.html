@@ -47,7 +47,7 @@ camera.position.set(0, 0.6, 2.4);
 scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 const dir = new THREE.DirectionalLight(0xffffff, 1.5); dir.position.set(2, 3, 2); scene.add(dir);
 const controls = new OrbitControls(camera, renderer.domElement);
-const gltf = await new GLTFLoader().loadAsync('./assets/softmind/scene.gltf');
+const gltf = await new GLTFLoader().loadAsync('./assets/softmind/scene-embedded.gltf');
 const model = gltf.scene; model.position.y = -0.55; scene.add(model);
 renderer.setAnimationLoop(() => { model.rotation.y += 0.005; controls.update(); renderer.render(scene, camera); });
 
