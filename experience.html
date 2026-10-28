@@ -9,12 +9,13 @@
   #ar-container { position: fixed; inset: 0; overflow: hidden; background: #000; display: none; }
   #hud { position: fixed; left: 0; right: 0; bottom: 0; display: none; z-index: 10; }
   #hud .panel {
-    background: var(--paper); color: var(--ink);
-    border-top: 3px solid var(--ink); padding: 16px 18px 20px;
+    background: rgba(12, 12, 15, .88); color: var(--ink);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line); padding: 18px 20px 22px;
   }
   #status { font-family: 'Anton', sans-serif; text-transform: uppercase; font-size: 21px; letter-spacing: .02em; }
   #prime { max-width: 680px; margin: 0 auto; padding: 0 22px 60px; }
-  #err { color: #B42318; font-weight: 600; }
+  #err { color: #FF8A70; font-weight: 600; }
 </style>
 <script type="importmap">
 {
@@ -37,7 +38,7 @@
   <p class="lede">This uses your camera to find the NOVA MIND poster artwork and lock a 3D mascot onto it. Nothing is recorded or uploaded — the camera feed never leaves your phone.</p>
   <div class="row">
     <button class="btn accent" id="startBtn">Start the camera</button>
-    <a class="btn ghost" href="fallback.html">No camera? 3D viewer</a>
+    <a class="btn ghost" id="fallbackLink" href="fallback.html">No camera? 3D viewer</a>
   </div>
   <p class="note" style="margin-top:18px">Works best on Chrome (Android) or Safari (iOS) over HTTPS. Aim at the poster artwork — printed, or open on the campaign home page.</p>
   <p class="note" id="err" style="margin-top:10px"></p>
@@ -75,6 +76,16 @@ if (campaignId) {
   try { campaign = (JSON.parse(localStorage.getItem('ryvo_campaigns') || '[]')).find(x => x.id === campaignId) || null; } catch (e) {}
 }
 const accentInt = campaign ? parseInt(campaign.color.slice(1), 16) : 0xff4b1f;
+// Keep campaign + placement attribution when handing off to the fallback viewer
+document.getElementById('fallbackLink').href = 'fallback.html' + location.search;
+const startBtnEl = document.getElementById('startBtn');
+if (campaignId && !campaign) {
+  // The QR/link was opened on a device other than the one that created the
+  // campaign in the Studio — the custom target lives in that other browser.
+  // Say so plainly instead of silently tracking the wrong (sample) artwork.
+  document.getElementById('err').textContent = 'This custom campaign was created in the Studio on another device/browser, and demo campaigns live in that browser — so this phone cannot load its target. Open the experience link on the device that created it, or continue below with the built-in NOVA MIND sample artwork.';
+  startBtnEl.textContent = 'Start with sample artwork instead';
+}
 if (campaign) {
   document.title = campaign.brand + ' — AR Experience';
   document.getElementById('primeTitle').innerHTML = 'Point at the<br><span class="hot">artwork.</span>';
@@ -106,7 +117,11 @@ document.getElementById('leadForm').addEventListener('submit', (e) => {
 });
 
 document.getElementById('startBtn').addEventListener('click', async () => {
-  err.textContent = '';
+  const startBtn = document.getElementById('startBtn');
+  if (startBtn.disabled) return;
+  startBtn.disabled = true;
+  startBtn.textContent = 'Starting the camera…';
+  if (!(campaignId && !campaign)) err.textContent = '';
   try {
     let mindBytes;
     if (campaign) {
@@ -148,6 +163,7 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     };
     anchor.onTargetLost = () => {
       if (engagedAt && Date.now() - engagedAt > 3000) logEvent('content_engaged');
+      engagedAt = 0;
       status.textContent = 'Searching for the poster…';
     };
 
@@ -162,6 +178,13 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     });
   } catch (e2) {
     console.error(e2);
+    // Restore the priming screen: the error text lives there, so leaving the
+    // black AR container visible would strand the user with no explanation.
+    prime.style.display = 'block';
+    container.style.display = 'none';
+    hud.style.display = 'none';
+    startBtn.disabled = false;
+    startBtn.textContent = 'Try the camera again';
     err.textContent = 'Camera or AR could not start on this device/browser. Use the 3D viewer fallback instead — same content, no camera.';
     logEvent('experience_start', { fallback: 'suggested', reason: String(e2 && e2.message || e2).slice(0, 120) });
   }

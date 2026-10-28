@@ -8,29 +8,33 @@
 <style>
   .studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
   @media (max-width: 800px) { .studio-grid { grid-template-columns: 1fr; } }
-  label.flab { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin: 18px 0 6px; }
+  label.flab { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin: 20px 0 8px; color: var(--muted); }
   input[type="text"], input[type="file"] {
-    width: 100%; font: inherit; padding: 12px 14px; background: var(--paper-2);
-    border: 2px solid var(--ink); color: var(--ink);
+    width: 100%; font: inherit; padding: 13px 16px; background: rgba(255, 255, 255, .05);
+    border: 1px solid var(--line); border-radius: 12px; color: var(--ink);
+    transition: border-color .2s ease, background .2s ease;
   }
-  input[type="text"]:focus { outline: 3px solid var(--accent); outline-offset: 1px; }
-  input[type="color"] { width: 64px; height: 44px; border: 2px solid var(--ink); background: var(--paper-2); padding: 3px; cursor: pointer; }
+  input[type="text"]::placeholder { color: var(--muted); }
+  input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  input[type="color"] { width: 64px; height: 44px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255, 255, 255, .05); padding: 3px; cursor: pointer; }
   .swatches { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .sw { width: 34px; height: 34px; border: 2px solid var(--ink); cursor: pointer; padding: 0; }
-  .preview { border: 2px solid var(--ink); background: var(--paper-2); padding: 18px; position: sticky; top: 18px; }
+  .sw { width: 34px; height: 34px; border: 1px solid rgba(255, 255, 255, .28); border-radius: 10px; cursor: pointer; padding: 0; transition: transform .2s ease; }
+  .sw:hover { transform: translateY(-2px); }
+  .preview { border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-2); backdrop-filter: blur(10px); padding: 22px; position: sticky; top: 18px; }
   .preview .pv-brand { font-family: 'Anton', sans-serif; text-transform: uppercase; font-size: 30px; line-height: 1; }
-  .preview img { width: 100%; display: block; border: 1px solid var(--ink); margin: 14px 0; background: #fff; min-height: 120px; object-fit: contain; }
-  .preview .pv-cta { display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; padding: 11px 18px; color: #fff; background: var(--accent); border: 2px solid var(--accent); }
-  .bar { height: 14px; border: 2px solid var(--ink); background: var(--paper-2); margin-top: 14px; display: none; }
+  .preview img { width: 100%; display: block; border: 1px solid var(--line); border-radius: 10px; margin: 14px 0; background: #fff; min-height: 120px; object-fit: contain; }
+  .preview .pv-cta { display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; padding: 11px 18px; border-radius: 999px; color: #fff; background: var(--accent); border: 1px solid var(--accent); }
+  .bar { height: 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .05); overflow: hidden; margin-top: 14px; display: none; }
   .bar > div { height: 100%; width: 0%; background: var(--accent); transition: width .2s ease; }
-  .camp-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #CFC9B8; padding: 12px 0; flex-wrap: wrap; }
+  .camp-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); padding: 14px 0; flex-wrap: wrap; }
   .camp-row .nm { font-weight: 700; }
   .camp-row .meta { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
   #qrWrap { margin-top: 14px; }
-  #qrWrap canvas, #qrWrap img { width: 168px; height: 168px; border: 2px solid var(--ink); background: #fff; padding: 8px; }
-  .err { color: #B42318; font-weight: 600; margin-top: 10px; }
+  #qrWrap canvas, #qrWrap img { width: 168px; height: 168px; border-radius: 12px; background: #fff; padding: 8px; }
+  .err { color: #FF8A70; font-weight: 600; margin-top: 10px; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script src="assets/reveal.js" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -80,7 +84,7 @@
       <div class="preview">
         <div class="mono" style="font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)">Live preview — lock-on state</div>
         <div class="pv-brand" id="pvBrand">Your brand</div>
-        <img id="pvArt" alt="Your artwork preview">
+        <img id="pvArt" alt="Your artwork preview" style="display:none">
         <div style="font-weight:700; font-size:18px" id="pvHeadline">Your headline appears here</div>
         <div style="margin-top:12px"><span class="pv-cta" id="pvCta">Your CTA</span></div>
         <p class="note" style="margin-top:14px">This is what a customer's phone shows the moment the camera finds your artwork.</p>
@@ -145,9 +149,17 @@ async function processArtwork(file) {
 $('fArt').addEventListener('change', async e => {
   artFile = e.target.files[0] || null;
   if (!artFile) return;
-  const { dataUrl } = await processArtwork(artFile);
-  artDataUrl = dataUrl;
-  $('pvArt').src = dataUrl;
+  $('formErr').textContent = '';
+  try {
+    const { dataUrl } = await processArtwork(artFile);
+    artDataUrl = dataUrl;
+    $('pvArt').src = dataUrl;
+    $('pvArt').style.display = 'block';
+  } catch (err) {
+    console.error(err);
+    artFile = null;
+    $('formErr').textContent = 'That image could not be read — try a JPG or PNG of your artwork.';
+  }
 });
 
 function renderList() {
@@ -202,9 +214,17 @@ $('studioForm').addEventListener('submit', async e => {
     $('pubLink').href = link;
     $('pubTitle').textContent = campaign.brand + ' — live.';
     $('qrWrap').innerHTML = '';
-    QRCode.toCanvas(document.createElement('canvas'), link, { width: 336, errorCorrectionLevel: 'M' }, (err, canvas) => {
-      if (!err) { canvas.style.width = '168px'; canvas.style.height = '168px'; $('qrWrap').appendChild(canvas); }
-    });
+    // QR is a nice-to-have on top of the link: if the QR library failed to
+    // load, the campaign is still published — never report it as a failure.
+    try {
+      QRCode.toCanvas(document.createElement('canvas'), link, { width: 336, errorCorrectionLevel: 'M' }, (err, canvas) => {
+        if (!err) { canvas.style.width = '168px'; canvas.style.height = '168px'; $('qrWrap').appendChild(canvas); }
+        else { $('qrWrap').innerHTML = '<p class="note">QR could not be drawn — use the experience link button below.</p>'; }
+      });
+    } catch (qrErr) {
+      console.warn('QR generation unavailable', qrErr);
+      $('qrWrap').innerHTML = '<p class="note">QR could not be drawn — use the experience link button below.</p>';
+    }
     $('publishedSec').style.display = 'block';
     $('compileStatus').textContent = 'Target compiled and campaign published.';
     $('publishedSec').scrollIntoView({ behavior: 'smooth' });

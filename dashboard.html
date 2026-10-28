@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NOVA MIND — Campaign Dashboard (demo)</title>
 <link rel="stylesheet" href="assets/style.css">
+<script src="assets/reveal.js" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -23,6 +24,7 @@
       <div class="stat"><div class="num" id="m_scans">0</div><div class="lab">QR scans / opens</div></div>
       <div class="stat"><div class="num" id="m_starts">0</div><div class="lab">Experience starts</div></div>
       <div class="stat"><div class="num" id="m_found">0</div><div class="lab">Target found</div></div>
+      <div class="stat"><div class="num" id="m_engaged">0</div><div class="lab">Engaged 3s+</div></div>
       <div class="stat"><div class="num" id="m_cta">0</div><div class="lab">CTA clicks</div></div>
       <div class="stat"><div class="num" id="m_leads">0</div><div class="lab">Leads</div></div>
     </div>
@@ -48,13 +50,16 @@
 </div>
 <script type="module">
 import { readEvents } from './assets/app.js';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const evts = readEvents();
 const count = (t, p) => evts.filter(e => e.type === t && (!p || e.placement === p)).length;
-m_scans.textContent = count('qr_scan'); m_starts.textContent = count('experience_start');
-m_found.textContent = count('target_found'); m_cta.textContent = count('cta_click'); m_leads.textContent = count('lead_submit');
+$('m_scans').textContent = count('qr_scan'); $('m_starts').textContent = count('experience_start');
+$('m_found').textContent = count('target_found'); $('m_engaged').textContent = count('content_engaged');
+$('m_cta').textContent = count('cta_click'); $('m_leads').textContent = count('lead_submit');
 const placements = [...new Set(evts.map(e => e.placement))];
-byPlacement.innerHTML = placements.map(p => `<tr><td>${p}</td><td>${count('qr_scan', p)}</td><td>${count('experience_start', p)}</td><td>${count('target_found', p)}</td><td>${count('cta_click', p)}</td><td>${count('lead_submit', p)}</td></tr>`).join('') || '<tr><td colspan="6">No events yet — run the experience first.</td></tr>';
-log.innerHTML = evts.slice(-30).reverse().map(e => `<tr><td>${e.ts.replace('T', ' ').slice(0, 19)}</td><td>${e.type}</td><td>${e.placement}</td><td>${e.campaign}</td></tr>`).join('') || '<tr><td colspan="4">No events yet.</td></tr>';
+$('byPlacement').innerHTML = placements.map(p => `<tr><td>${esc(p)}</td><td>${count('qr_scan', p)}</td><td>${count('experience_start', p)}</td><td>${count('target_found', p)}</td><td>${count('cta_click', p)}</td><td>${count('lead_submit', p)}</td></tr>`).join('') || '<tr><td colspan="6">No events yet — run the experience first.</td></tr>';
+$('log').innerHTML = evts.slice(-30).reverse().map(e => `<tr><td>${esc(String(e.ts || '').replace('T', ' ').slice(0, 19))}</td><td>${esc(e.type)}</td><td>${esc(e.placement)}</td><td>${esc(e.campaign)}</td></tr>`).join('') || '<tr><td colspan="4">No events yet.</td></tr>';
 document.getElementById('clearBtn').addEventListener('click', () => { localStorage.removeItem('nm_events'); location.reload(); });
 </script>
 </body>
