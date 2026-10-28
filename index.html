@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NOVA MIND — The Poster Is the Landing Page</title>
+<title>RYVO — AR Campaign Platform</title>
 <link rel="stylesheet" href="assets/style.css">
+<script src="assets/reveal.js" defer></script>
 </head>
 <body>
 <div class="wrap">
   <header class="topbar">
-    <div class="wordmark">Nova<em>Mind</em></div>
+    <div class="wordmark">Ry<em>vo</em></div>
     <nav>
       <a href="studio.html">Studio</a>
       <a href="experience.html?p=poster">Experience</a>
@@ -18,16 +19,28 @@
     </nav>
   </header>
 
-  <div class="kicker">An AR campaign, printed on paper · TechFest '26</div>
-  <h1 class="display">The poster<br>is the<br><span class="hot">landing page.</span></h1>
-  <p class="lede">NOVA MIND is a fictional AI study-buddy launching at TechFest '26. Its entire campaign is one printed poster: <b>scan it, point a phone at it, and it moves.</b> No app download. Every scan, start and tap is measured per placement — this page is the working demo.</p>
-  <div class="row">
-    <a class="btn accent" href="experience.html?p=poster">Open the AR experience</a>
-    <a class="btn ghost" href="poster.html">Get the printable poster</a>
+  <div class="hero">
+    <div class="kicker">Ryvo · AR Campaign Platform</div>
+    <h1 class="display">Physical surfaces.<br><span class="hot">Digital moments.</span></h1>
+    <p class="lede">Ryvo turns a brand's poster, packaging or signage into an interactive AR experience — <b>published by QR, opened in the browser, no app download</b> — and measures every scan, lock-on and lead per placement. Brands build campaigns in the Studio; this page carries a live one, running below.</p>
+    <div class="row">
+      <a class="btn accent" href="studio.html">Open Ryvo Studio</a>
+      <a class="btn ghost" href="experience.html?p=poster">Try the live AR demo</a>
+    </div>
   </div>
 
   <section class="sec">
-    <div class="sec-head"><span><span class="no">01</span> — How the campaign runs</span><span>Four steps, zero installs</span></div>
+    <div class="sec-head"><span><span class="no">01</span> — Live demo case · NOVA MIND</span><span>An AR campaign, printed on paper · TechFest '26</span></div>
+    <h2>The poster is the landing page.</h2>
+    <p class="lede" style="font-size:18px">NOVA MIND is a fictional AI study-buddy launching at TechFest '26. Its entire campaign is one printed poster: <b>scan it, point a phone at it, and it moves.</b> No app download. Every scan, start and tap is measured per placement — this is the working demo.</p>
+    <div class="row">
+      <a class="btn accent" href="experience.html?p=poster">Open the AR experience</a>
+      <a class="btn ghost" href="poster.html">Get the printable poster</a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span><span class="no">02</span> — How the campaign runs</span><span>Four steps, zero installs</span></div>
     <div class="steps">
       <div class="step"><div class="n">STEP 1</div><h3>Print &amp; place</h3><p>The poster goes up at the main gate. Its artwork is the AR target — compiled, not decorative.</p></div>
       <div class="step"><div class="n">STEP 2</div><h3>Scan the code</h3><p>The QR opens the experience in the browser and tags the session to this placement: <span class="mono">p=poster</span>.</p></div>
@@ -37,7 +50,7 @@
   </section>
 
   <section class="sec">
-    <div class="sec-head"><span><span class="no">02</span> — The artwork is the interface</span><span>Image target · MindAR</span></div>
+    <div class="sec-head"><span><span class="no">03</span> — The artwork is the interface</span><span>Image target · MindAR</span></div>
     <div class="frame">
       <img class="target" id="targetImg" alt="NOVA MIND campaign artwork — the image the AR engine tracks">
       <div class="cap"><span>Fig. 01 — Tracked target, demo build</span><span>Point the experience camera here</span></div>
@@ -46,28 +59,28 @@
   </section>
 
   <section class="sec">
-    <div class="sec-head"><span><span class="no">03</span> — Your turn: the Studio</span><span>Real feature · In-browser compile</span></div>
+    <div class="sec-head"><span><span class="no">04</span> — Your turn: the Studio</span><span>Real feature · In-browser compile</span></div>
     <h2>Don't demo our brand. Demo yours.</h2>
     <p class="lede" style="font-size:18px">The Studio is live: name a campaign, upload <b>your own artwork</b>, and Ryvo compiles it into a trackable AR target in your browser — then hands you the experience link and QR.</p>
     <div class="row"><a class="btn accent" href="studio.html">Open Ryvo Studio</a></div>
   </section>
 
   <section class="sec">
-    <div class="sec-head"><span><span class="no">04</span> — Proof, not impressions</span><span>Demo data · On-device</span></div>
+    <div class="sec-head"><span><span class="no">05</span> — Proof, not impressions</span><span>Demo data · On-device</span></div>
     <h2>Every placement gets a number.</h2>
     <p class="lede" style="font-size:18px">Run the experience, tap the CTA, then open the <a href="dashboard.html">campaign dashboard</a>. On this static demo the events live on your device; the production platform runs the same event contract through a server pipeline.</p>
   </section>
 
   <footer class="foot">
+    <span>Ryvo — AR campaign platform</span>
     <span>Nova Mind — Fictional brand, real plumbing</span>
-    <span>Built on Ryvo · AR campaign platform</span>
   </footer>
 </div>
 <script>
 fetch('assets/card.png.b64').then(r => r.text()).then(b64 => {
   const bytes = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0));
   document.getElementById('targetImg').src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
-});
+}).catch(() => { document.getElementById('targetImg').src = 'assets/card.png'; });
 </script>
 </body>
 </html>

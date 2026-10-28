@@ -5,6 +5,7 @@ Fictional brand: NOVA MIND, an AI study-buddy app launching at TechFest '26.
 
 ## Pages
 - index.html — campaign home: the pitch, the flow, the tracked artwork
+- studio.html — Ryvo Studio: name a campaign, upload your own artwork, compile it into a MindAR target in-browser (localStorage), publish → experience link + QR
 - experience.html — real image-target AR (MindAR 1.2.5 + Three.js). Camera permission priming, target-found HUD, CTA + lead form, honest fallback suggestion on failure
 - fallback.html — 3D viewer fallback (labelled not AR), same CTA + lead form
 - poster.html — printable poster. Its QR is generated in the browser for the exact host it is served from, with placement tag p=poster
